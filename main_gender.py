@@ -48,13 +48,8 @@ if __name__ == "__main__":
                 with open(os.path.join(out_path,platform+'.csv'),'w') as f:
                     items = ["",start_date_file.strftime("%Y-%m-%d"),"",""]
                     f.write('|'.join(items)+'\n')
-
-        
-        start_date = None
         mode = 'all'
-    else:
-        start_date = None      
-            
+
                 
     
     while True:
@@ -65,7 +60,7 @@ if __name__ == "__main__":
             might be earlier than the starting date.
             '''
             for platform in platforms:
-                MetaCollector.collect_data(platform,start_date)         
+                MetaCollector.collect_data(platform)         
             break  
             '''
             Tag the submissions as COVID related based on a regex match in the title

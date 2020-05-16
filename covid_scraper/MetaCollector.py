@@ -30,9 +30,8 @@ def find_last_day_collect(platform):
     most_recent = max(dates)
     return most_recent
 
-def collect_data(platform,start_date):
-    if start_date is None:
-        start_date = find_last_day_collect(platform)
+def collect_data(platform):
+    start_date = find_last_day_collect(platform)
     if platform in ['medrxiv','biorxiv']:
         collect_MB(platform,start_date)
     elif platform == 'arxiv':
