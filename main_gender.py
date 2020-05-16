@@ -61,7 +61,7 @@ if __name__ == "__main__":
             '''
             for platform in platforms:
                 MetaCollector.collect_data(platform)         
-            break  
+
             '''
             Tag the submissions as COVID related based on a regex match in the title
             and in the abstract.
