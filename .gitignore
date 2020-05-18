@@ -1,6 +1,6 @@
 covid_scraper/__pycache__/
 data/*
-!data/.gitkeep
+!data/gender_data.txt
 tools/*
 !tools/.gitkeep
 geckodriver.log

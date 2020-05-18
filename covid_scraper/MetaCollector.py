@@ -38,6 +38,8 @@ def collect_data(platform):
         collect_arxiv(start_date)
     elif platform == 'osf':
         collect_osf(start_date)
+    elif platform == 'preprints_org':
+        collect_preprints_org(start_date)
        
 def date_range(date1, date2):
     dates = []
@@ -125,7 +127,7 @@ def collect_osf(start_date):
     with open(os.path.join('data','meta',platform+'.csv'),'a',encoding='utf-8') as f:
         for i in range(nb_dates):
             dt = dates_to_collect[i].strftime("%Y-%m-%d")
-            print('{}: collecting metadata {} , {}/{}.'.format(platform,dt,i+1,nb_dates))
+            print('{}: collecting metadata {} , {}/{}.'.format('osf',dt,i+1,nb_dates))
             page = 1
             while True:
                 # get web page
@@ -174,8 +176,57 @@ def collect_osf(start_date):
                     
                 page += 1 
                 
-        
-        
+def collect_preprints_org(start_date):        
+    scraper = cfscrape.create_scraper() # returns a requests.Session object
+    url_base = "https://www.preprints.org/search?search1=*&field1=title_keywords&clause=AND&search2=&field2=authors&search_subject_area=&search_subject_sub_area=&date_from={}&date_to={}&search_btn=&page_num={}"
+    platform = 'preprints_org'
+    now = datetime.datetime.now()
+    dates_to_collect = date_range(start_date,now)
+    dates_to_collect.append(datetime.datetime.now()+ datetime.timedelta(days=1))
+    nb_dates = len(dates_to_collect)
+    with open(os.path.join('data','meta',platform+'.csv'),'a',encoding='utf-8') as f:
+        for i in range(nb_dates-1):
+            dt1 = dates_to_collect[i].strftime("%Y-%m-%d")
+            dt2 = dates_to_collect[i+1].strftime("%Y-%m-%d")
+            print('{}: collecting metadata {} , {}/{}.'.format(platform,dt1,i+1,nb_dates))
+            page=1
+            while True:
+                time.sleep(5)
+                url_page = url_base.format(dt1,dt2,page)
+                html = bs(scraper.get(url_page).text)
+                # Collect the articles in the result in a list
+                articles = html.find_all('div', attrs={'class': 'search-content-box margin-serach-wrapper-left'})
+                if len(articles) == 0:
+                    break
+                for j in range(len(articles)):
+                    article = articles[j]
+                    title_data = article.find('a', attrs={'class': 'title'})
+                    title = title_data.text
+                    art_doi = title_data.attrs['href']
+                        
+                    # Now collect author information
+                    authors = article.find_all('a', attrs={'class': 'author-selector'})
+                    all_authors = []
+                    for author in authors:
+                        name = author.text
+                        name = name.split(' ')
+                        name = '/'.join([name[-1]] + [' '.join(name[:-1])])
+                        all_authors.append(name)
+                    all_authors = ';'.join(all_authors)
+                                        
+                    subjects = []
+                    metadata = article.find_all('a')
+                    for tag in metadata:
+                        if tag.has_attr("href"):
+                            ref = tag.attrs['href']
+                            if "subject" in ref:
+                                subjects.append(tag.text.strip())
+                    subjects = ';'.join(subjects)
+                    f.write('|'.join([art_doi,dt1,subjects,title,all_authors])+'\n')  
+
+                page += 1
+
+    
 def download(url,start_date,resume_re,logging,record_tag,format_tag):
     max_tries=10
     params = {"verb": "ListRecords", "metadataPrefix": "arXiv", 
