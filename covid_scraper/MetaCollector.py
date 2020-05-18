@@ -18,7 +18,7 @@ import xml.etree.cElementTree as ET
 from nltk.tokenize import word_tokenize, sent_tokenize
 import re
 import pandas as pd
-import numpy as np
+
     
 def find_last_day_collect(platform):
     dates = set()
@@ -36,6 +36,8 @@ def collect_data(platform):
         collect_MB(platform,start_date)
     elif platform == 'arxiv':
         collect_arxiv(start_date)
+    elif platform == 'osf':
+        collect_osf(start_date)
        
 def date_range(date1, date2):
     dates = []
@@ -112,69 +114,67 @@ def collect_MB(platform,start_date):
                 else:
                     page += 1
  
-# =============================================================================
-# def collect_OSF(platform,start_date):
-#     from selenium import webdriver
-#     urlpage = 'https://osf.io/preprints/discover?page={}&q=date%3A{}%20'
-#     driver = webdriver.Firefox(executable_path = os.path.join('tools','geckodriver.exe'))
-#     
-#     now = datetime.datetime.now()
-#     dates_to_collect = date_range(start_date,now)
-#     nb_dates = len(dates_to_collect)
-#     
-#     for i in range(nb_dates):
-#         dt = dates_to_collect[i].strftime("%Y-%m-%d")
-#         page = 1
-#         while True:
-#             # get web page
-#             driver.get(urlpage.format(page,dt_str))
-#             nb_try = 0
-#             while True:
-#                 time.sleep(5)
-#                 source = driver.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
-#                 html = bs(source, 'html.parser')
-#                 articles = html.find_all('div', attrs={'class': "__search-result__3ede2 ember-view"})
-#                 nb_articles = len(articles)
-#                 if nb_articles == 0:
-#                     print('Not loaded.')
-#                     if nb_try == 1:
-#                         break
-#                     else:
-#                         nb_try += 1
-#                 else:
-#                     break
-#             if nb_articles == 0:
-#                 print('No articles found')
-#                 break
-#             for article in articles:
-#                 #title = article.find('a', attrs={'class': 'ember-view'})
-#                 title = article.find_all('a')[-1]
-#                 link = title.attrs['href'].strip()
-#                 title = title.text.strip()
-#         
-#                 authors = article.find_all('li', attrs={'class': 'ember-view'})
-#                
-#                 all_authors = []
-#                 for author in authors:
-#                     name = author.text
-#                     name = name.split(' ')
-#                     name = '/'.join([name[-1]] + [' '.join(name[:-1])])
-#                     all_authors.append(name)
-#                 all_authors = ';'.join(all_authors)
-#                 subjects = article.find_all('span', attrs={'class': 'subject-preview pointer'})
-#                 list_subjects = []
-#                 for subject in subjects:
-#                     list_subjects.append(subject.text.strip())
-#                 list_subjects = ';'.join(list_subjects)
-#                 platform = article.find('span', attrs={'class': 'search-result-providers'}).text.strip()
-#                 platform = platform.split('|')
-#                 platform = '/'.join([x.strip() for x in platform])
-#                 
-#                 with open(outpath.format(year),'a',encoding='utf-8') as f:
-#                     f.write('|'.join([platform,link,dt_str,title,all_authors,list_subjects]) + '\n')
-#             page += 1 
-#         print('Parsed {}'.format(dt_str))
-# =============================================================================
+def collect_osf(start_date):
+    from selenium import webdriver
+    urlpage = 'https://osf.io/preprints/discover?page={}&q=date%3A{}%20'
+    driver = webdriver.Firefox(executable_path = os.path.join('tools','geckodriver.exe'))
+    platform = 'osf'
+    now = datetime.datetime.now()
+    dates_to_collect = date_range(start_date,now)
+    nb_dates = len(dates_to_collect)
+    with open(os.path.join('data','meta',platform+'.csv'),'a',encoding='utf-8') as f:
+        for i in range(nb_dates):
+            dt = dates_to_collect[i].strftime("%Y-%m-%d")
+            print('{}: collecting metadata {} , {}/{}.'.format(platform,dt,i+1,nb_dates))
+            page = 1
+            while True:
+                # get web page
+                driver.get(urlpage.format(page,dt))
+                nb_try = 0
+                while True:
+                    time.sleep(5)
+                    source = driver.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
+                    html = bs(source, 'html.parser')
+                    articles = html.find_all('div', attrs={'class': "__search-result__3ede2 ember-view"})
+                    nb_articles = len(articles)
+                    if nb_articles == 0:
+                        if nb_try == 1:
+                            break
+                        else:
+                            nb_try += 1
+                    else:
+                        break
+                if nb_articles == 0:
+                    print('No articles found')
+                    break
+                for article in articles:
+                    title = article.find_all('a')[-1]
+                    link = title.attrs['href'].strip()
+                    title = title.text.strip()
+            
+                    authors = article.find_all('li', attrs={'class': 'ember-view'})
+                   
+                    all_authors = []
+                    for author in authors:
+                        name = author.text
+                        name = name.split(' ')
+                        name = '/'.join([name[-1]] + [' '.join(name[:-1])])
+                        all_authors.append(name)
+                    all_authors = ';'.join(all_authors)
+                    subjects = article.find_all('span', attrs={'class': 'subject-preview pointer'})
+                    list_subjects = []
+                    for subject in subjects:
+                        list_subjects.append(subject.text.strip())
+                    list_subjects = ';'.join(list_subjects)
+                    platform = article.find('span', attrs={'class': 'search-result-providers'}).text.strip()
+                    platform = platform.split('|')
+                    platform = '/'.join([x.strip() for x in platform])
+
+                    f.write('|'.join([link,dt,platform,title,all_authors]) + '\n')
+                    
+                page += 1 
+                
+        
         
 def download(url,start_date,resume_re,logging,record_tag,format_tag):
     max_tries=10
@@ -298,30 +298,7 @@ def collect_arxiv(start_date):
                 items = [x.replace('|',' ') for x in items]
                 items = [x.replace('\n',' ') for x in items]
                 f.write("|".join(items) + "\n")
-
-def tag_keywords(platform,regex_search):
-    meta_data = pd.read_csv(os.path.join("data","meta",platform+".csv"),
-                            sep="|",header=None,error_bad_lines=False)
-
-    if platform in ['biorxiv','medrxiv']:
-        meta_data.columns = ["ID","date","title","authors"]
-        abstracts = pd.read_csv(os.path.join("data","meta",platform+"_abs.csv"),sep="|",
-                            error_bad_lines=False)
-        abstracts.columns = ["ID","abstract","link"]
-        meta_data  = pd.merge(meta_data,abstracts,on="ID",how="left")
-    elif platform == 'arxiv':
-        meta_data.columns = ["ID","date","sub","title","authors","abstract","categories"]
-    
-    meta_data.loc[meta_data['abstract'].isnull(),"abstract"] = ''
-    meta_data['text'] = meta_data['title'] + ' ' + meta_data['abstract']
-    meta_data['text'] = meta_data['text'].str.lower()
-    meta_data.loc[meta_data['text'].isnull(),"text"] = ''
-    
-
-    
-    meta_data['key_related'] = meta_data['text'].apply(lambda x: re.search(regex_search,x) is not None)
-    meta_data[['ID','key_related']].to_csv(os.path.join("data","meta",platform+"_key.csv"),index=False,sep='|')
-    
+  
     
 def tag_keywords_title(platform,regex_search):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+".csv"),
@@ -330,7 +307,7 @@ def tag_keywords_title(platform,regex_search):
     if platform in ['biorxiv','medrxiv']:
         meta_data.columns = ["ID","date","title","authors"]
     elif platform == 'arxiv':
-        meta_data.columns = ["ID","date","sub","title","authors","abstract","categories"]
+        meta_data.columns = ["ID","date","sub","title","authors"]
     
     meta_data['title'] = meta_data['title'].str.lower()
     meta_data.loc[meta_data['title'].isnull(),"title"] = ''
