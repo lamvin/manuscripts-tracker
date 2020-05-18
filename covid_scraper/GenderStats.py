@@ -9,11 +9,12 @@ Created on Fri May 15 16:26:16 2020
 import pandas as pd
 import os
 import numpy as np
+import datetime
 
 def assign_gender(platform,gender_dict):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+'.csv'),encoding='utf-8',header=None,
                             sep="|")
-    if platform == 'arxiv':
+    if platform in ['arxiv','F1000','osf','preprints_org']:
         meta_data.columns = ["ID","date","sub","title","authors"]
     else:
         meta_data.columns = ["ID","date","title","authors"]
@@ -26,7 +27,10 @@ def assign_gender(platform,gender_dict):
     
   
     meta_data['date_str'] = meta_data['date'].copy()
-    meta_data['date'] = pd.to_datetime(meta_data['date'],format='%Y-%m-%d',errors='coerce')
+    if platform == "nber":
+        meta_data['date'] = pd.to_datetime(meta_data['date'],format='%Y-%m',errors='coerce')
+    else:
+        meta_data['date'] = pd.to_datetime(meta_data['date'],format='%Y-%m-%d',errors='coerce')
     meta_data = meta_data.sort_values('date').drop_duplicates(['title','ID','authors'],keep='first')
    
     nb_rows = len(meta_data)
@@ -87,9 +91,12 @@ def combine_platforms(platforms):
         df['type'] = "preprints"
         df_list.append(df)
         
+    with open(os.path.join("data","start_date.txt"),'r') as f:
+        start_date = f.read()
+    now = datetime.datetime.now().strftime("%Y-%m-%d")
     all_df = pd.concat(df_list, axis=0, ignore_index=True)
     all_df['date'] = pd.to_datetime(all_df['date'],format='%Y-%m-%d',errors='coerce')
-    all_df = all_df[all_df['date'].between('2019-01-01', '2020-05-18')]
+    all_df = all_df[all_df['date'].between(start_date, now)]
     
     all_df.to_csv(os.path.join("data","all_data.csv"), mode='w',sep="|",
                   index=False)
