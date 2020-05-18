@@ -11,9 +11,13 @@ import os
 import numpy as np
 
 def assign_gender(platform,gender_dict):
-    meta_data = pd.read_csv(os.path.join("data","meta",platform+'.csv'),header=None,
+    meta_data = pd.read_csv(os.path.join("data","meta",platform+'.csv'),encoding='utf-8',header=None,
                             sep="|")
-    meta_data.columns = ["ID","date","title","authors"]
+    if platform == 'arxiv':
+        meta_data.columns = ["ID","date","sub","title","authors"]
+    else:
+        meta_data.columns = ["ID","date","title","authors"]
+        
     gender_data = pd.read_csv(os.path.join("data","meta",platform+'_gender.csv'),
                               sep="|")
     
@@ -82,6 +86,11 @@ def combine_platforms(platforms):
         df['platform'] = platform
         df['type'] = "preprints"
         df_list.append(df)
+        
     all_df = pd.concat(df_list, axis=0, ignore_index=True)
-    all_df.to_csv(os.path.join("data","all_data.csv"), mode='w',sep="|")
-            
+    all_df['date'] = pd.to_datetime(all_df['date'],format='%Y-%m-%d',errors='coerce')
+    all_df = all_df[all_df['date'].between('2019-01-01', '2020-05-18')]
+    
+    all_df.to_csv(os.path.join("data","all_data.csv"), mode='w',sep="|",
+                  index=False)
+    

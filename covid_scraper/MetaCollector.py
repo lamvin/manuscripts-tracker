@@ -112,6 +112,70 @@ def collect_MB(platform,start_date):
                 else:
                     page += 1
  
+# =============================================================================
+# def collect_OSF(platform,start_date):
+#     from selenium import webdriver
+#     urlpage = 'https://osf.io/preprints/discover?page={}&q=date%3A{}%20'
+#     driver = webdriver.Firefox(executable_path = os.path.join('tools','geckodriver.exe'))
+#     
+#     now = datetime.datetime.now()
+#     dates_to_collect = date_range(start_date,now)
+#     nb_dates = len(dates_to_collect)
+#     
+#     for i in range(nb_dates):
+#         dt = dates_to_collect[i].strftime("%Y-%m-%d")
+#         page = 1
+#         while True:
+#             # get web page
+#             driver.get(urlpage.format(page,dt_str))
+#             nb_try = 0
+#             while True:
+#                 time.sleep(5)
+#                 source = driver.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
+#                 html = bs(source, 'html.parser')
+#                 articles = html.find_all('div', attrs={'class': "__search-result__3ede2 ember-view"})
+#                 nb_articles = len(articles)
+#                 if nb_articles == 0:
+#                     print('Not loaded.')
+#                     if nb_try == 1:
+#                         break
+#                     else:
+#                         nb_try += 1
+#                 else:
+#                     break
+#             if nb_articles == 0:
+#                 print('No articles found')
+#                 break
+#             for article in articles:
+#                 #title = article.find('a', attrs={'class': 'ember-view'})
+#                 title = article.find_all('a')[-1]
+#                 link = title.attrs['href'].strip()
+#                 title = title.text.strip()
+#         
+#                 authors = article.find_all('li', attrs={'class': 'ember-view'})
+#                
+#                 all_authors = []
+#                 for author in authors:
+#                     name = author.text
+#                     name = name.split(' ')
+#                     name = '/'.join([name[-1]] + [' '.join(name[:-1])])
+#                     all_authors.append(name)
+#                 all_authors = ';'.join(all_authors)
+#                 subjects = article.find_all('span', attrs={'class': 'subject-preview pointer'})
+#                 list_subjects = []
+#                 for subject in subjects:
+#                     list_subjects.append(subject.text.strip())
+#                 list_subjects = ';'.join(list_subjects)
+#                 platform = article.find('span', attrs={'class': 'search-result-providers'}).text.strip()
+#                 platform = platform.split('|')
+#                 platform = '/'.join([x.strip() for x in platform])
+#                 
+#                 with open(outpath.format(year),'a',encoding='utf-8') as f:
+#                     f.write('|'.join([platform,link,dt_str,title,all_authors,list_subjects]) + '\n')
+#             page += 1 
+#         print('Parsed {}'.format(dt_str))
+# =============================================================================
+        
 def download(url,start_date,resume_re,logging,record_tag,format_tag):
     max_tries=10
     params = {"verb": "ListRecords", "metadataPrefix": "arXiv", 

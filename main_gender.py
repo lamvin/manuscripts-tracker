@@ -13,6 +13,7 @@ import pandas as pd
 import time
 
 if __name__ == "__main__":
+    #platforms = ['medrxiv','biorxiv','arxiv','osf']
     platforms = ['medrxiv','biorxiv','arxiv']
     args = sys.argv
     nb_args = len(args)
@@ -46,7 +47,10 @@ if __name__ == "__main__":
                 else:
                     start_date_file = start_date
                 with open(os.path.join(out_path,platform+'.csv'),'w') as f:
-                    items = ["",start_date_file.strftime("%Y-%m-%d"),"",""]
+                    if platform in ["arxiv","osf"]:
+                        items = ["",start_date_file.strftime("%Y-%m-%d"),"","",""]
+                    else:
+                        items = ["",start_date_file.strftime("%Y-%m-%d"),"",""]
                     f.write('|'.join(items)+'\n')
         mode = 'all'
 
@@ -72,6 +76,7 @@ if __name__ == "__main__":
                 MetaCollector.tag_keywords_title(platform,regex_search)      
                 
         if mode == "stats" or mode == "all" or mode == "periodic":
+            print("Loading gender matcher.")
             gender = pd.read_csv(os.path.join('data','total_gender.txt'),sep='\t')
             gender['gender'] = gender['gender'].str.lower()
             gender_dict = {row[1]['First_Name']:row[1]['gender'] for row in gender.iterrows()}
@@ -80,8 +85,10 @@ if __name__ == "__main__":
                 
             GenderStats.combine_platforms(platforms)
             
+        print("Data up to date!")
         if mode == "periodic":
             #Run again in 24 hours
+            print("Sleeping for 24 hours.")
             time.sleep(60*60*24)
         else:
             break
