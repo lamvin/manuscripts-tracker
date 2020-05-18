@@ -13,8 +13,7 @@ import pandas as pd
 import time
 
 if __name__ == "__main__":
-    #platforms = ['medrxiv','biorxiv','arxiv','osf']
-    platforms = ['medrxiv','biorxiv','arxiv']
+    platforms = ['medrxiv','biorxiv','arxiv','osf']
     args = sys.argv
     nb_args = len(args)
     mode = args[1]

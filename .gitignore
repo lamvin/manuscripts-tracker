@@ -3,3 +3,4 @@ data/*
 !data/.gitkeep
 tools/*
 !tools/.gitkeep
+geckodriver.log
