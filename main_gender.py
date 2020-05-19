@@ -15,8 +15,9 @@ import time
 if __name__ == "__main__":
     platforms = ['medrxiv','biorxiv','arxiv','osf','preprints_org',
                  'nber','F1000']
-    osf_platforms = ['psyarxiv','earthrxiv','socarxiv']
+    osf_platforms = ['psyarxiv','eartharxiv','socarxiv']
     all_platforms = platforms + osf_platforms
+    all_platforms.remove('osf')
     args = sys.argv
     nb_args = len(args)
     mode = args[1]
@@ -42,10 +43,6 @@ if __name__ == "__main__":
                         sys.exit()
                 
             for platform in platforms:
-                with open(os.path.join(out_path,platform+'_gender.csv'),'w') as f:
-                    header = ["ID","date","first_gender","last_gender","all_gender",
-                              "middle_gender","nb_authors","nb_genders_id","nb_women"]
-                    f.write('|'.join(header)+'\n')
                 if platform == "medrxiv" and start_date < min_date_med:
                     start_date_file = min_date_med
                 else:
@@ -61,6 +58,12 @@ if __name__ == "__main__":
                         items = ["",start_date_file.strftime("%Y-%m-%d"),"all","",""]
                         
                     f.write('|'.join(items)+'\n')
+                    
+            for platform in all_platforms:
+                with open(os.path.join(out_path,platform+'_gender.csv'),'w') as f:
+                    header = ["ID","date","first_gender","last_gender","all_gender",
+                              "middle_gender","nb_authors","nb_genders_id","nb_women"]
+                    f.write('|'.join(header)+'\n')
         mode = 'all'
 
                 

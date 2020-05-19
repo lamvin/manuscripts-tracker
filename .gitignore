@@ -5,3 +5,4 @@ tools/*
 !tools/.gitkeep
 geckodriver.log
 get_stats.py
+demo_figure_2.py

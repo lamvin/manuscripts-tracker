@@ -13,8 +13,8 @@ import datetime
 
 def assign_gender(platform,gender_dict):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+'.csv'),encoding='utf-8',header=None,
-                            sep="|")
-    if platform in ['arxiv','F1000','osf','preprints_org']:
+                            sep="|",error_bad_lines=False)
+    if platform in ['arxiv','F1000','psyarxiv','socarxiv','eartharxiv','preprints_org']:
         meta_data.columns = ["ID","date","sub","title","authors"]
     else:
         meta_data.columns = ["ID","date","title","authors"]

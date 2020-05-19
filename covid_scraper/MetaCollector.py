@@ -393,10 +393,12 @@ def tag_keywords_title(platform,regex_search):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+".csv"),
                             sep="|",header=None,error_bad_lines=False)
 
-    if platform in ['biorxiv','medrxiv']:
-        meta_data.columns = ["ID","date","title","authors"]
-    elif platform == 'arxiv':
+    if platform in ['arxiv','F1000','psyarxiv','socarxiv','eartharxiv','preprints_org']:
         meta_data.columns = ["ID","date","sub","title","authors"]
+    else:
+        meta_data.columns = ["ID","date","title","authors"]
+    
+        
     
     meta_data['title'] = meta_data['title'].str.lower()
     meta_data.loc[meta_data['title'].isnull(),"title"] = ''
@@ -515,13 +517,14 @@ def collect_F1000(start_dates):
 
 def split_platform(platform,subplatforms):
     meta_data = pd.read_csv(os.path.join("data","meta",platform+'.csv'),encoding='utf-8',header=None,
-                            sep="|")
+                            sep="|",error_bad_lines=False)
     if platform in ['arxiv','F1000','osf','preprints_org']:
         meta_data.columns = ["ID","date","sub","title","authors"]
+        meta_data['sub'] = meta_data['sub'].str.lower()
     else:
         meta_data.columns = ["ID","date","title","authors"]
         
     for sub in subplatforms:
         df = meta_data.loc[meta_data['sub']==sub]
         df.to_csv(os.path.join("data","meta",sub+'.csv'),encoding='utf-8',
-                  header=False,index=False)
+                  header=False,index=False,sep="|")
