@@ -47,6 +47,7 @@ def find_last_day_collect(platform):
             most_recent = {}
             for row in max_dates.iterrows():
                 most_recent[row[0]] = row[1]
+            del most_recent['all']
     else:
         dates = set()
         with open(os.path.join("data","meta",platform + '.csv'),'r',encoding='utf-8') as f:
@@ -91,7 +92,7 @@ def collect_MB(platform,start_date):
     with open(os.path.join('data','meta',platform+'.csv'),'a',encoding='utf-8') as f:
         for i in range(nb_dates):
             dt = dates_to_collect[i].strftime("%Y-%m-%d")
-            print('{}: collecting metadata {} , {}/{}.'.format(platform,dt,i+1,nb_dates))
+            print('{}: collecting metadata {}, {}/{}.'.format(platform,dt,i+1,nb_dates))
             page=0
             while True:
                 time.sleep(5) 
@@ -161,7 +162,7 @@ def collect_osf(start_date):
     with open(os.path.join('data','meta',platform+'.csv'),'a',encoding='utf-8') as f:
         for i in range(nb_dates):
             dt = dates_to_collect[i].strftime("%Y-%m-%d")
-            print('{}: collecting metadata {} , {}/{}.'.format('osf',dt,i+1,nb_dates))
+            print('{}: collecting metadata {}, {}/{}.'.format('osf',dt,i+1,nb_dates))
             page = 1
             while True:
                 # get web page
@@ -223,7 +224,7 @@ def collect_preprints_org(start_date):
         for i in range(nb_dates-1):
             dt1 = dates_to_collect[i].strftime("%Y-%m-%d")
             dt2 = dates_to_collect[i+1].strftime("%Y-%m-%d")
-            print('{}: collecting metadata {} , {}/{}.'.format(platform,dt1,i+1,nb_dates-1))
+            print('{}: collecting metadata {}, {}/{}.'.format(platform,dt1,i+1,nb_dates-1))
             page=1
             while True:
                 time.sleep(5)
@@ -455,7 +456,7 @@ def collect_F1000(start_dates):
         for i in range(nb_subjects):
             subject = list_subjects[i]
             start_date = start_dates[subject]
-            print('{}: collecting metadata {} , {}/{}.'.format(platform,subject,i+1,nb_subjects))
+            print('{}: collecting metadata {}, {}/{}.'.format(platform,subject,i+1,nb_subjects))
             page = 1
             subject_done = False
             while True:
@@ -503,7 +504,9 @@ def collect_F1000(start_dates):
                     date = article.find('div', attrs={'class': 'article-bottom-bar'}).text.strip()
                     date = ' '.join(date.split(' ')[1:])
                     date = dateutil.parser.parse(date)
-                    if date < start_date:
+                    temp = date < start_date
+                    temp = temp.values[0]
+                    if temp:
                         subject_done = True
                         break
                     date_str = date.strftime("%Y-%m-%d") 

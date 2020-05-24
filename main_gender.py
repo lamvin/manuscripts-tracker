@@ -11,6 +11,7 @@ import datetime
 import sys
 import pandas as pd
 import time
+import numpy as np
 
 if __name__ == "__main__":
     platforms = ['medrxiv','biorxiv','arxiv','osf','preprints_org',
@@ -21,6 +22,7 @@ if __name__ == "__main__":
     args = sys.argv
     nb_args = len(args)
     mode = args[1]
+    start_time = time.time()
     
     if mode == 'init':             
         if len(args) < 3:
@@ -100,10 +102,11 @@ if __name__ == "__main__":
             GenderStats.combine_platforms(all_platforms)
             
         print("Data up to date!")
+        print("--- Total time of execution: {} minutes ---".format(np.round((time.time() - start_time)/60),2))
         if mode == "periodic":
             #Run again in 24 hours
             print("Sleeping for 24 hours.")
             time.sleep(60*60*24)
         else:
             break
-   
+
