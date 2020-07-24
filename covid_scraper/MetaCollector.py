@@ -153,8 +153,11 @@ def collect_MB(platform,start_date):
  
 def collect_osf(start_date):
     from selenium import webdriver
+    from selenium.webdriver.firefox.options import Options
     urlpage = 'https://osf.io/preprints/discover?page={}&q=date%3A{}%20'
-    driver = webdriver.Firefox(executable_path = os.path.join('tools','geckodriver.exe'))
+    options = Options()
+    options.add_argument("--headless")
+    driver = webdriver.Firefox(executable_path = os.path.join('tools','geckodriver.exe'),options=options)
     platform = 'osf'
     now = datetime.datetime.now()
     dates_to_collect = date_range(start_date,now)
@@ -211,6 +214,7 @@ def collect_osf(start_date):
                     f.write('|'.join(items) + '\n')
                     
                 page += 1 
+    driver.quit() 
                 
 def collect_preprints_org(start_date):        
     scraper = cfscrape.create_scraper() # returns a requests.Session object
