@@ -506,7 +506,7 @@ def collect_F1000(start_dates):
                     all_authors = ';'.join(all_authors)
         
                     date = article.find('div', attrs={'class': 'article-bottom-bar'}).text.strip()
-                    date = ' '.join(date.split(' ')[1:])
+                    date = ' '.join(date.split(' ')[-3:])
                     date = dateutil.parser.parse(date)
                     temp = date < start_date
                     temp = temp.values[0]
