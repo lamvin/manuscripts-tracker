@@ -214,7 +214,7 @@ def collect_osf(start_date):
                     f.write('|'.join(items) + '\n')
                     
                 page += 1 
-    driver.quit() 
+    driver.quit()
                 
 def collect_preprints_org(start_date):        
     scraper = cfscrape.create_scraper() # returns a requests.Session object
@@ -421,7 +421,8 @@ def collect_nber(start_date):
         for yr in years:
             urlpage = urlbase.format(yr)
             html = bs(scraper.get(urlpage).text, 'html.parser')
-            articles = html.find_all('li')
+            art_list = html.find('div',{'class':'col-md-12 pl-md-0 pr-md-0'})
+            articles = art_list.find_all('li')
             for article in articles:
                 data = str(article)
                 infos = re.search(r'<li>(.*?)<cite>',data).group(1).split(' ')
